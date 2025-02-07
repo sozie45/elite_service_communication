@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Service Communication</title>
+    <style>
+        /* Styles généraux */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f0ff; /* Fond bleu clair */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #0073e6; /* Texte en bleu */
+            margin-bottom: 20px;
+        }
+        .connexion-texte {
+            color: #0073e6; /* Texte en bleu */
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+        }
+        .tabs div {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            width: 48%;
+            text-align: center;
+        }
+        .orange-ci {
+            background-color: #ff6600;
+            color: #fff;
+        }
+        .mtn-ci {
+            background-color: #ffcc00;
+            color: #000;
+        }
+        .moov {
+            background-color: #00cc66;
+            color: #fff;
+        }
+        .depot {
+            background-color: #e6f0ff; /* Bleu clair pour les dépôts */
+            color: #000;
+        }
+        .retrait {
+            background-color: #00ffff; /* Cyan pour les retraits */
+            color: #000;
+        }
+        .transaction-form input, .transaction-form select, .transaction-form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .historique table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .historique th, .historique td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        .deconnexion {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff0000;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .otp-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .otp-modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .otp-modal button {
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+        }
+        .otp-modal button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran d'accueil -->
+    <div id="accueil" class="container">
+        <h1>Elite Service Communication</h1>
+        <div id="login-form">
+            <p class="connexion-texte">Connexion</p>
+            <input type="text" id="login" placeholder="Login">
+            <input type="password" id="password" placeholder="Mot de passe">
+            <button onclick="connexion()">Connexion</button>
+            <p class="error" id="login-error"></p>
+            <p><a href="#" onclick="afficherInscription()">Créer un compte</a></p>
+            <p><a href="#" onclick="afficherReset()">Réinitialiser le mot de passe</a></p>
+        </div>
+        <div id="inscription-form" class="hidden">
+            <input type="text" id="nom" placeholder="Nom">
+            <input type="text" id="prenom" placeholder="Prénom">
+            <input type="email" id="email" placeholder="Email">
+            <input type="text" id="contact" placeholder="Contact">
+            <input type="text" id="new-login" placeholder="Login">
+            <input type="password" id="new-password" placeholder="Mot de passe">
+            <input type="password" id="confirm-password" placeholder="Confirmer le mot de passe">
+            <button onclick="creerCompte()">Créer un compte</button>
+            <p class="error" id="inscription-error"></p>
+            <p><a href="#" onclick="afficherLogin()">Retour à la connexion</a></p>
+        </div>
+        <div id="reset-form" class="hidden">
+            <input type="text" id="reset-login" placeholder="Login">
+            <button onclick="reinitialiserMotDePasse()">Réinitialiser</button>
+            <p class="error" id="reset-error"></p>
+            <p><a href="#" onclick="afficherLogin()">Retour à la connexion</a></p>
+        </div>
+    </div>
+
+    <!-- Page de transaction -->
+    <div id="transaction-page" class="container hidden">
+        <div class="deconnexion" onclick="deconnexion()">Déconnexion</div>
+        <h1>Transactions Mobile Money</h1>
+        <div class="tabs">
+            <div class="orange-ci" onclick="afficherReseau('orange-ci')">Orange CI</div>
+            <div class="mtn-ci" onclick="afficherReseau('mtn-ci')">MTN CI</div>
+            <div class="moov" onclick="afficherReseau('moov')">Moov Africa</div>
+        </div>
+        <div class="transaction-form">
+            <h2 id="reseau-titre">Orange CI</h2>
+            <input type="text" id="nom-beneficiaire" placeholder="Nom du bénéficiaire">
+            <input type="text" id="numero-beneficiaire" placeholder="Numéro du bénéficiaire">
+            <input type="number" id="montant" placeholder="Montant">
+            <div class="tabs">
+                <div class="depot" onclick="afficherTypeTransaction('depot')">Dépôt</div>
+                <div class="retrait" onclick="afficherTypeTransaction('retrait')">Retrait</div>
+            </div>
+            <button onclick="demarrerTransaction()">Effectuer la Transaction</button>
+        </div>
+        <div class="historique">
+            <h2>Historique des Transactions</h2>
+            <table id="historique-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Nom</th>
+                        <th>Numéro</th>
+                        <th>Montant</th>
+                        <th>Réseau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les transactions seront ajoutées ici dynamiquement -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal OTP -->
+    <div id="otp-modal" class="otp-modal hidden">
+        <h2>Validation OTP</h2>
+        <p>Veuillez entrer le code OTP généré par Google Authenticator.</p>
+        <input type="text" id="otp-code" placeholder="Code OTP">
+        <button onclick="validerOTP()">Valider</button>
+        <p class="error" id="otp-error"></p>
+    </div>
+
+    <script>
+        // Variables globales
+        let utilisateurs = [];
+        let transactions = [];
+        let utilisateurConnecte = null;
+        let transactionEnCours = null;
+        let typeTransaction = 'depot'; // Par défaut, dépôt
+
+        // Fonctions pour afficher/masquer les formulaires
+        function afficherLogin() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('inscription-form').classList.add('hidden');
+            document.getElementById('reset-form').classList.add('hidden');
+        }
+        function afficherInscription() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('inscription-form').classList.remove('hidden');
+            document.getElementById('reset-form').classList.add('hidden');
+        }
+        function afficherReset() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('inscription-form').classList.add('hidden');
+            document.getElementById('reset-form').classList.remove('hidden');
+        }
+
+        // Fonction pour valider le mot de passe
+        function validerMotDePasse(motDePasse) {
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            return regex.test(motDePasse);
+        }
+
+        // Fonction pour créer un compte
+        function creerCompte() {
+            const nom = document.getElementById('nom').value;
+            const prenom = document.getElementById('prenom').value;
+            const email = document.getElementById('email').value;
+            const contact = document.getElementById('contact').value;
+            const login = document.getElementById('new-login').value;
+            const password = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (password !== confirmPassword) {
+                document.getElementById('inscription-error').textContent = "Les mots de passe ne correspondent pas.";
+                return;
+            }
+            if (!validerMotDePasse(password)) {
+                document.getElementById('inscription-error').textContent = "Le mot de passe doit contenir des lettres, des chiffres et des caractères spéciaux.";
+                return;
+            }
+            utilisateurs.push({ nom, prenom, email, contact, login, password });
+            document.getElementById('inscription-error').textContent = "";
+            afficherLogin();
+        }
+
+        // Fonction pour se connecter
+        function connexion() {
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const utilisateur = utilisateurs.find(u => u.login === login && u.password === password);
+            if (utilisateur) {
+                utilisateurConnecte = utilisateur;
+                document.getElementById('accueil').classList.add('hidden');
+                document.getElementById('transaction-page').classList.remove('hidden');
+            } else {
+                document.getElementById('login-error').textContent = "Login ou mot de passe incorrect.";
+            }
+        }
+
+        // Fonction pour réinitialiser le mot de passe
+        function reinitialiserMotDePasse() {
+            const login = document.getElementById('reset-login').value;
+            const utilisateur = utilisateurs.find(u => u.login === login);
+            if (utilisateur) {
+                utilisateur.password = "NouveauMotDePasse123!"; // Mot de passe temporaire
+                document.getElementById('reset-error').textContent = "Mot de passe réinitialisé. Utilisez 'NouveauMotDePasse123!' pour vous connecter.";
+            } else {
+                document.getElementById('reset-error').textContent = "Aucun compte trouvé avec ce login.";
+            }
+        }
+
+        // Fonction pour afficher le type de transaction (dépôt ou retrait)
+        function afficherTypeTransaction(type) {
+            typeTransaction = type;
+            document.querySelector('.depot').style.backgroundColor = type === 'depot' ? '#e6f0ff' : '#ccc';
+            document.querySelector('.retrait').style.backgroundColor = type === 'retrait' ? '#00ffff' : '#ccc';
+        }
+
+        // Fonction pour afficher le réseau sélectionné
+        function afficherReseau(reseau) {
+            document.getElementById('reseau-titre').textContent = reseau.toUpperCase();
+            // Associer les numéros débiteurs par défaut
+            if (reseau === 'orange-ci') {
+                document.getElementById('numero-beneficiaire').value = '0709893174';
+            } else if (reseau === 'mtn-ci') {
+                document.getElementById('numero-beneficiaire').value = '0545587232';
+            } else if (reseau === 'moov') {
+                document.getElementById('numero-beneficiaire').value = '0171856162';
+            }
+        }
+
+        // Fonction pour démarrer une transaction
+        function demarrerTransaction() {
+            const nom = document.getElementById('nom-beneficiaire').value;
+            const numero = document.getElementById('numero-beneficiaire').value;
+            const montant = document.getElementById('montant').value;
+            const reseau = document.getElementById('reseau-titre').textContent;
+
+            if (nom && numero && montant) {
+                transactionEnCours = { type: typeTransaction, nom, numero, montant, reseau };
+                document.getElementById('otp-modal').classList.remove('hidden');
+            } else {
+                alert('Veuillez remplir tous les champs.');
+            }
+        }
+
+        // Fonction pour valider l'OTP
+        function validerOTP() {
+            const otp = document.getElementById('otp-code').value;
+            // Simuler une validation OTP (remplacer par une vraie validation)
+            if (otp === "123456") { // Code OTP fictif pour la démo
+                transactions.push({
+                    date: new Date().toLocaleString(),
+                    ...transactionEnCours
+                });
+                mettreAJourHistorique();
+                document.getElementById('otp-modal').classList.add('hidden');
+                document.getElementById('otp-error').textContent = "";
+            } else {
+                document.getElementById('otp-error').textContent = "Code OTP incorrect.";
+            }
+        }
+
+        // Fonction pour mettre à jour l'historique
+        function mettreAJourHistorique() {
+            const tbody = document.querySelector('#historique-table tbody');
+            tbody.innerHTML = '';
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.type}</td>
+                    <td>${transaction.nom}</td>
+                    <td>${transaction.numero}</td>
+                    <td>${transaction.montant}</td>
+                    <td>${transaction.reseau}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Fonction pour se déconnecter
+        function deconnexion() {
+            utilisateurConnecte = null;
+            document.getElementById('accueil').classList.remove('hidden');
+            document.getElementById('transaction-page').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
